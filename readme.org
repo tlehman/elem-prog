@@ -11,7 +11,7 @@ more mathematical than most books about programming.
 Programming is all about manipulating objects (e.g. 42), those objects have types (e.g. int), 
 and those types cluster together into similar concepts (e.g. numbers).
 
-The basic undefined notion in the book is an *entity*.
+The basic undefined notion in the book is a *thing*.
 ** Entity
 *** Abstract entity
 An individual thing that is eternal and unchanging. For example, the number 42.
