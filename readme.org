@@ -1,8 +1,8 @@
 * Elements of Programming by Alexander Stepanov & Paul McJones
 A good book starts by defining the terms it uses. This book begins with precise definitions of 
 elementary notions in programming such as *value* and *equality*. By not relying on intuition, 
-the book proceeds rigorously to define the foundations of generic programming (one of the authors 
-was a creator of the C++ Standard Template Library).
+the book proceeds to rigorously define and explore the foundations of generic programming 
+(one of the authors was a creator of the C++ Standard Template Library).
 
 This book uses a small subset of C++, focusing on templates and generic programming. It is also 
 more mathematical than most books about programming.
@@ -26,11 +26,66 @@ The particular concrete entity ~n~ will only exist as long as it's in scope in t
 it will eventually be overwritten.
 
 ** Species
-*** Abstract entity
-*** Concrete entity
-** Entity
-*** Abstract entity
-*** Concrete entity
+*** Abstract species
+Describes properties of essentially equivalent abstract entities. Types are examples of species.
+*** Concrete species
+Describes properties of essentially equivalent concrete entities. Types are examples of species.
+** Genus
+*** Abstract genus
+A set of abstract species with properties in common. Examples: numbers and vector spaces are each genera (plural of genus)
+*** Concrete genus
+A set of concrete species with properties in common.
+** Data
+A *datum* is a finite string of `0`s and `1`s. Data is the plural of datum. A datum corresponding to a particular entity 
+is said to *represent* that entity.
+** Values
+A *value* is a *datum* together with it's *interpretation*.
+** Equality
+Two values are *equal* if they refer to the same abstract entity. This may sound circular, but it doesn't have to be, it 
+reduces equality of values to equality in the mathematical theories those values model. For example, if the `int` 
+type models ℤ, the integers, then we can use the definition of equality as equality of integers. Those integers are not 
+values in our program, they are abstract entities, so there is no circularity, it just "bottoms out" in the Platonic realm.
+** Representational equality
+Two values are *representationally equal* if they have identical strings of bits.
+** Value type
+A *value type* is a correspondence between a [[Species][species]] and a set of [[Data][data]].
+** Uniquely represented
+A [[Value type][value type]] is *uniquely represented* if each [[Data][datum]] corresponds to _at most 1_ [[Abstract entity][abstract entity.]]
+*** Examples:
+Imagine a value type as 3-bit integers that use the first bit as a sign (positive or negative) and the remaining two bits 
+to store the magnitude, then the set of all possible values are:
 
-* Chapter 2
+| datum | entity |
+|   000 |      0 |
+|   001 |      1 |
+|   010 |      2 |
+|   011 |      3 |
+|   100 |      0 |
+|   101 |     -1 |
+|   110 |     -2 |
+|   111 |     -3 |
+
+Notice how `000` and `100` represent 0 and -0, which are the same abstract entity, but different strings of bits, this value 
+type is therefore not uniquely represented.
+
+Now imagine a [[https://en.wikipedia.org/wiki/Two%27s_complement][twos complement]] integer type:
+| datum | entity |
+|   000 |      0 |
+|   001 |      1 |
+|   010 |      2 |
+|   011 |      3 |
+|   100 |      4 |
+|   101 |     -3 |
+|   110 |     -2 |
+|   111 |     -1 |
+
+Observe that none of the entities are the same, so this value type is uniquely represented.
+
+** Lemma 1.1
+If a [[Value type][value type]] is [[Uniquely represented][uniquely represented]], then [[Equality][equality]] implies [[Representational equality][representational equality]]
+*** Proof
+
+* Chapter 2: Transformations and Their Orbits
+* Chapter 3: Associative Operations
+* Chapter 4: Linear Orderings
 
