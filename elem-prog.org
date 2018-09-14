@@ -1,0 +1,29 @@
+* Elements of Programming by Alexander Stepanov & Paul McJones
+A good book starts by defining the terms it uses. This book begins with precise definitions of 
+elementary notions in programming such as *value* and *equality*. By not relying on intuition, 
+the book proceeds rigorously to define the foundations of generic programming (one of the authors 
+was a creator of the C++ Standard Template Library).
+
+This book uses a small subset of C++, focusing on templates and generic programming. It is also 
+more mathematical than most books about programming.
+
+* Chapter 1: Foundations
+Programming is all about manipulating objects (e.g. 42), those objects have types (e.g. int), 
+and those types cluster together into similar concepts (e.g. numbers).
+
+The basic undefined notion in the book is an *entity*.
+** Entity
+*** Abstract entity
+An individual thing that is eternal and unchanging. For example, the number 42.
+*** Concrete entity
+An individual thing that comes into existence in space and time.
+
+** Species
+*** Abstract entity
+*** Concrete entity
+** Entity
+*** Abstract entity
+*** Concrete entity
+
+* Chapter 2
+
