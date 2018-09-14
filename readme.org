@@ -16,7 +16,14 @@ The basic undefined notion in the book is an *entity*.
 *** Abstract entity
 An individual thing that is eternal and unchanging. For example, the number 42.
 *** Concrete entity
-An individual thing that comes into existence in space and time.
+An individual thing that comes into existence in space and time. For example, 
+
+#+begin_src C++
+int n = 42;
+#+end_src
+
+The particular concrete entity ~n~ will only exist as long as it's in scope in the program, then 
+it will eventually be overwritten.
 
 ** Species
 *** Abstract entity
