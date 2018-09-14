@@ -36,7 +36,7 @@ A set of abstract species with properties in common. Examples: numbers and vecto
 *** Concrete genus
 A set of concrete species with properties in common.
 ** Data
-A *datum* is a finite string of `0`s and `1`s. Data is the plural of datum. A datum corresponding to a particular entity 
+A *datum* is a finite string of ~0~s and ~1~s. Data is the plural of datum. A datum corresponding to a particular entity 
 is said to *represent* that entity.
 ** Values
 A *value* is a *datum* together with it's *interpretation*.
@@ -83,9 +83,44 @@ Observe that none of the entities are the same, so this value type is uniquely r
 
 ** Lemma 1.1
 If a [[Value type][value type]] is [[Uniquely represented][uniquely represented]], then [[Equality][equality]] implies [[Representational equality][representational equality]]
-*** Proof
+
+** Lemma 1.2
+If a [[Value type][value type]] is [[Uniquely represented][uniquely represented]], then [[Equality][equality]] implies [[Representational equality][representational equality]]
 
 * Chapter 2: Transformations and Their Orbits
+#+name: headers
+#+begin_src C++ :noweb yes
+#define Domain(Op) int
+#define requires(...)
+#+end_src
+
+
+#+begin_src C++ :noweb yes :tangle yes :includes <iostream> :namespaces std :flags -std=c++14
+<<headers>>
+
+template<typename Op>
+    requires(BinaryOperation(Op))
+Domain(Op) square(const Domain(Op)& x, Op op)
+{
+    return op(x, x);
+}
+
+int main()
+{
+   auto mult = [](int a, int b) { return a * b; };
+   typedef decltype(mult) Op;
+
+   cout << square<Op>(2, mult) << endl
+        << square<Op>(3, mult) << endl;
+   return 0;
+}
+#+end_src
+
+#+RESULTS:
+| 4 |
+| 9 |
+
+
 * Chapter 3: Associative Operations
 * Chapter 4: Linear Orderings
 
