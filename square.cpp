@@ -1,10 +1,10 @@
 #include <iostream>
-#include <functional>
+#include <type_traits>
 
 using namespace std;
 
 
-#define Domain(FuncType) decltype(FuncType())
+#define Domain(ftype) typename ftype::DomainType
 #define requires(...)
 
 template<typename Op>
@@ -15,37 +15,23 @@ Domain(Op) square(const Domain(Op)& x, Op op)
 }
 
 template <typename T>
-class Transformation {
-public:
-  T operator()(T x) {
-    return fn(x);
-  }
-  Transformation(std::function<T(T)>& f) {
-    fn = f;
-  }
-private:
-  std::function<T(T)> fn;
-};
-
-template <typename T>
-class BinaryOperation {
-public:
-  T operator()(T x, T y) {
-    return fn(x, y);
-  }
-  BinaryOperation(std::function<T(T,T)>& f) {
-    fn = f;
-  }
-private:
-  std::function<T(T, T)> fn;
+struct BinaryOperation {
+  typedef T DomainType;
+  typedef T ReturnType;
+  typedef std::function<T(T,T)> FuncType;
+  FuncType fn;
+  ReturnType operator()(DomainType x, DomainType y) {
+    return fn(x,y);
+  };
 };
 
 
 int main()
 {
-  BinaryOperation<int> mult([](int a, int b) { return a * b; });
+  BinaryOperation<int> mult;
+  mult.fn = [](int a, int b) { return a * b; };
 
-  cout << square<BinaryOperation<int>(2, mult) << endl
-       << square<BinaryOperation<int>(3, mult) << endl;
+  cout << square<BinaryOperation<int>>(2, mult) << endl
+       << square<BinaryOperation<int>>(3, mult) << endl;
   return 0;
 }
