@@ -1,14 +1,14 @@
 * Elements of Programming by Alexander Stepanov & Paul McJones
-A good book starts by defining the terms it uses. This book begins with precise definitions of 
-elementary notions in programming such as *value* and *equality*. By not relying on intuition, 
-the book proceeds to rigorously define and explore the foundations of generic programming 
+A good book starts by defining the terms it uses. This book begins with precise definitions of
+elementary notions in programming such as *value* and *equality*. By not relying on intuition,
+the book proceeds to rigorously define and explore the foundations of generic programming
 (one of the authors was a creator of the C++ Standard Template Library).
 
-This book uses a small subset of C++, focusing on templates and generic programming. It is also 
+This book uses a small subset of C++, focusing on templates and generic programming. It is also
 more mathematical than most books about programming.
 
 * Chapter 1: Foundations
-Programming is all about manipulating objects (e.g. 42), those objects have types (e.g. int), 
+Programming is all about manipulating objects (e.g. 42), those objects have types (e.g. int),
 and those types cluster together into similar concepts (e.g. numbers).
 
 The basic undefined notion in the book is a *thing*.
@@ -16,13 +16,13 @@ The basic undefined notion in the book is a *thing*.
 *** Abstract entity
 An individual thing that is eternal and unchanging. For example, the number 42.
 *** Concrete entity
-An individual thing that comes into existence in space and time. For example, 
+An individual thing that comes into existence in space and time. For example,
 
 #+begin_src C++
 int n = 42;
 #+end_src
 
-The particular concrete entity ~n~ will only exist as long as it's in scope in the program, then 
+The particular concrete entity ~n~ will only exist as long as it's in scope in the program, then
 it will eventually be overwritten.
 
 ** Species
@@ -36,14 +36,14 @@ A set of abstract species with properties in common. Examples: numbers and vecto
 *** Concrete genus
 A set of concrete species with properties in common.
 ** Data
-A *datum* is a finite string of ~0~s and ~1~s. Data is the plural of datum. A datum corresponding to a particular entity 
+A *datum* is a finite string of ~0~s and ~1~s. Data is the plural of datum. A datum corresponding to a particular entity
 is said to *represent* that entity.
 ** Values
 A *value* is a *datum* together with it's *interpretation*.
 ** Equality
-Two values are *equal* if they refer to the same abstract entity. This may sound circular, but it doesn't have to be, it 
-reduces equality of values to equality in the mathematical theories those values model. For example, if the `int` 
-type models ℤ, the integers, then we can use the definition of equality as equality of integers. Those integers are not 
+Two values are *equal* if they refer to the same abstract entity. This may sound circular, but it doesn't have to be, it
+reduces equality of values to equality in the mathematical theories those values model. For example, if the ~int~
+type models ℤ, the integers, then we can use the definition of equality as equality of integers. Those integers are not
 values in our program, they are abstract entities, so there is no circularity, it just "bottoms out" in the Platonic realm.
 ** Representational equality
 Two values are *representationally equal* if they have identical strings of bits.
@@ -52,7 +52,7 @@ A *value type* is a correspondence between a [[Species][species]] and a set of [
 ** Uniquely represented
 A [[Value type][value type]] is *uniquely represented* if each [[Data][datum]] corresponds to _at most 1_ [[Abstract entity][abstract entity.]]
 *** Examples:
-Imagine a value type as 3-bit integers that use the first bit as a sign (positive or negative) and the remaining two bits 
+Imagine a value type as 3-bit integers that use the first bit as a sign (positive or negative) and the remaining two bits
 to store the magnitude, then the set of all possible values are:
 
 | datum | entity |
@@ -65,7 +65,7 @@ to store the magnitude, then the set of all possible values are:
 |   110 |     -2 |
 |   111 |     -3 |
 
-Notice how `000` and `100` represent 0 and -0, which are the same abstract entity, but different strings of bits, this value 
+Notice how ~000~ and ~100~ represent 0 and -0, which are the same abstract entity, but different strings of bits, this value
 type is therefore not uniquely represented.
 
 Now imagine a [[https://en.wikipedia.org/wiki/Two%27s_complement][twos complement]] integer type:
@@ -88,23 +88,36 @@ If a [[Value type][value type]] is [[Uniquely represented][uniquely represented]
 If a [[Value type][value type]] is [[Uniquely represented][uniquely represented]], then [[Equality][equality]] implies [[Representational equality][representational equality]]
 
 * Chapter 2: Transformations and Their Orbits
-#+name: headers
-#+begin_src C++ :noweb yes
-#define Domain(Op) int
-#define requires(...)
-#+end_src
+an *operation* is a homogeneous function of nonzero arity
 
+a *transformation* is a unary operation
 
+For example, ~square~ is a transformation on ~int~
+
+#+name: square
 #+begin_src C++ :noweb yes :tangle yes :includes <iostream> :namespaces std :flags -std=c++14
-<<headers>>
-
 template<typename Op>
     requires(BinaryOperation(Op))
 Domain(Op) square(const Domain(Op)& x, Op op)
 {
     return op(x, x);
 }
+#+end_src
 
+Where we define ~Domain(.)~ using a macro. Observe that the ~requires(...)~ macro throws away everything, 
+it is for documentation purposes only.
+
+#+name: headers
+#+begin_src C++ :noweb yes
+#define Domain(FuncType) decltype(FuncType::operator())
+#define requires(...)
+#+end_src
+
+Testing out the ~square~ template function applied to ~Op~, and then applied to 2 and 3:
+
+#+begin_src C++ :noweb yes :tangle square.cpp :includes <iostream> :namespaces std :flags -std=c++14
+<<headers>>
+<<square>>
 int main()
 {
    auto mult = [](int a, int b) { return a * b; };
@@ -115,12 +128,8 @@ int main()
    return 0;
 }
 #+end_src
-
 #+RESULTS:
-| 4 |
-| 9 |
 
 
 * Chapter 3: Associative Operations
 * Chapter 4: Linear Orderings
-
