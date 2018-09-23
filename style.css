@@ -1,0 +1,7 @@
+pre {
+  overflow-x: auto;
+}
+pre .src {
+  overflow-wrap: normal;
+  white-space: pre;
+}

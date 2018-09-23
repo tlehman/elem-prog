@@ -1,4 +1,7 @@
-* Elements of Programming by Alexander Stepanov & Paul McJones
+#+AUTHOR: Tobi Lehman <tobi.lehman@gmail.com>
+#+TITLE: Notes on Elements of Programming by Alexander Stepanov & Paul McJones
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="style.css" />
+* Preamble
 A good book starts by defining the terms it uses. This book begins with precise definitions of
 elementary notions in programming such as *value* and *equality*. By not relying on intuition,
 the book proceeds to rigorously define and explore the foundations of generic programming
@@ -10,8 +13,6 @@ more mathematical than most books about programming.
 * Chapter 1: Foundations
 Programming is all about manipulating objects (e.g. 42), those objects have types (e.g. int),
 and those types cluster together into similar concepts (e.g. numbers).
-
-The basic undefined notion in the book is a *thing*.
 ** Entity
 *** Abstract entity
 An individual thing that is eternal and unchanging. For example, the number 42.
@@ -36,8 +37,10 @@ A set of abstract species with properties in common. Examples: numbers and vecto
 *** Concrete genus
 A set of concrete species with properties in common.
 ** Data
-A *datum* is a finite string of ~0~s and ~1~s. Data is the plural of datum. A datum corresponding to a particular entity
+A *datum* is a finite string of ~0~ s and ~1~ s. Data is the plural of datum. A datum corresponding to a particular entity
 is said to *represent* that entity.
+** Interpretation
+The [[Entity][entity]] that corresponds to a datum is the *interpretation* of that datum.
 ** Values
 A *value* is a *datum* together with it's *interpretation*.
 ** Equality
@@ -50,7 +53,7 @@ Two values are *representationally equal* if they have identical strings of bits
 ** Value type
 A *value type* is a correspondence between a [[Species][species]] and a set of [[Data][data]].
 ** Uniquely represented
-A [[Value type][value type]] is *uniquely represented* if each [[Data][datum]] corresponds to _at most 1_ [[Abstract entity][abstract entity.]]
+A [[Value type][value type]] is *uniquely represented* if each [[Data][datum]] corresponds to at most one [[Abstract entity][abstract entity.]]
 *** Examples:
 Imagine a value type as 3-bit integers that use the first bit as a sign (positive or negative) and the remaining two bits
 to store the magnitude, then the set of all possible values are:
@@ -81,11 +84,12 @@ Now imagine a [[https://en.wikipedia.org/wiki/Two%27s_complement][twos complemen
 
 Observe that none of the entities are the same, so this value type is uniquely represented.
 
+** Ambiguity
+A [[Value type][value type]] is *ambiguous* if there is a datum that has more than one [[Interpretation][interpretation]].
 ** Lemma 1.1
-If a [[Value type][value type]] is [[Uniquely represented][uniquely represented]], then [[Equality][equality]] implies [[Representational equality][representational equality]]
-
+If a [[Value type][value type]] is [[Uniquely represented][uniquely represented]], then [[Equality][equality]] implies [[Representational equality][representational equality]].
 ** Lemma 1.2
-If a [[Value type][value type]] is [[Uniquely represented][uniquely represented]], then [[Equality][equality]] implies [[Representational equality][representational equality]]
+If a [[Value type][value type]] is [[Ambiguity][unambiguous]], then representational equality implies equality.
 
 * Chapter 2: Transformations and Their Orbits
 an *operation* is a homogeneous function of nonzero arity
@@ -105,30 +109,57 @@ Domain(Op) square(const Domain(Op)& x, Op op)
 #+end_src
 
 Where we define ~Domain(.)~ using a macro. Observe that the ~requires(...)~ macro throws away everything, 
-it is for documentation purposes only.
+it is for documentation purposes only. /In the year 2020, the C++20 standard will provide language-level support 
+for ~concepts~ and ~requires~ constraints./
 
 #+name: headers
 #+begin_src C++ :noweb yes
-#define Domain(FuncType) decltype(FuncType::operator())
+#define Domain(ftype) typename ftype::DomainType
 #define requires(...)
 #+end_src
 
+An example of the ~ftype~ would be ~BinaryOperation~
+
 Testing out the ~square~ template function applied to ~Op~, and then applied to 2 and 3:
 
+#+name: ftypes
+#+begin_src C++ :noweb yes
+template <typename T>
+struct BinaryOperation {
+  typedef T DomainType;
+  typedef T ReturnType;
+  typedef std::function<T(T,T)> FuncType;
+  FuncType fn;
+  ReturnType operator()(DomainType x, DomainType y) {
+    return fn(x,y);
+  };
+};
+#+end_src
+
+Now we tie it all together 
 #+begin_src C++ :noweb yes :tangle square.cpp :includes <iostream> :namespaces std :flags -std=c++14
 <<headers>>
+<<ftypes>>
 <<square>>
+
 int main()
 {
-   auto mult = [](int a, int b) { return a * b; };
-   typedef decltype(mult) Op;
+  BinaryOperation<int> mult;
+  mult.fn = [](int a, int b) { return a * b; };
 
-   cout << square<Op>(2, mult) << endl
-        << square<Op>(3, mult) << endl;
-   return 0;
+  cout << square<BinaryOperation<int>>(2, mult) << endl
+       << square<BinaryOperation<int>>(3, mult) << endl
+       << square<BinaryOperation<int>>(4, mult) << endl;
+  return 0;
 }
 #+end_src
 #+RESULTS:
+|  4 |
+|  9 |
+| 16 |
+
+** Orbits
+Given a transformation $f$ and a point $x$, we define the orbit as the set $\{x, f(x), f(f(x)), ... \}$ 
 
 
 * Chapter 3: Associative Operations

@@ -1,5 +1,5 @@
 #include <iostream>
-#include <type_traits>
+#include <functional>
 
 using namespace std;
 
@@ -13,18 +13,6 @@ Domain(Op) square(const Domain(Op)& x, Op op)
 {
   return op(x, x);
 }
-
-template <typename T>
-struct BinaryOperation {
-  typedef T DomainType;
-  typedef T ReturnType;
-  typedef std::function<T(T,T)> FuncType;
-  FuncType fn;
-  ReturnType operator()(DomainType x, DomainType y) {
-    return fn(x,y);
-  };
-};
-
 
 int main()
 {
