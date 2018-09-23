@@ -1,6 +1,6 @@
 #+AUTHOR: Tobi Lehman <tobi.lehman@gmail.com>
 #+TITLE: Notes on Elements of Programming by Alexander Stepanov & Paul McJones
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="style.css" />
+#+HTML_HEAD: <style type="text/css">.org-src-container { overflow-x: scroll; overflow-y: hidden; white-space: nowrap; }; pre .src { display: inline-block; } </style>
 * Preamble
 A good book starts by defining the terms it uses. This book begins with precise definitions of
 elementary notions in programming such as *value* and *equality*. By not relying on intuition,
@@ -92,9 +92,27 @@ If a [[Value type][value type]] is [[Uniquely represented][uniquely represented]
 If a [[Value type][value type]] is [[Ambiguity][unambiguous]], then representational equality implies equality.
 
 * Chapter 2: Transformations and Their Orbits
-an *operation* is a homogeneous function of nonzero arity
+** Arity
+The arity of a function is the number of parameters it takes. For example, $\cos$ has an arity of 1.
+The addition function $+$ has an arity of 2, and it takes two numbers $x,y$ and then returns their sum $x+y$.
 
-a *transformation* is a unary operation
+A function of arity $n$ is called $n$ -ary.
+
+Some common special cases have their own special names, like 1-ary functions are *unary*, and 2-ary functions are *binary*.
+
+** Homogeneous function
+Any function where all the arguments have the same type.
+
+** Operations
+An *operation* is a [[Homogeneous function][homogeneous function]] of nonzero [[Arity][arity]].
+
+Given a [[Value type][type]] $T$, the function $f : T \times T \times ... \times T \to T$ is an operation.
+
+*** Examples
+The familiar operations from arithmetic, like $+$ and $\times$ are operations, as are 
+
+** Transformations
+a *transformation* is a [[Arity][unary]] operation
 
 For example, ~square~ is a transformation on ~int~
 
@@ -159,7 +177,11 @@ int main()
 | 16 |
 
 ** Orbits
-Given a transformation $f$ and a point $x$, we define the orbit as the set $\{x, f(x), f(f(x)), ... \}$ 
+Given a transformation $f$ and a point $x$, we define the orbit as the set $O_{x,f}= \{x, f(x), f(f(x)), ... \}$ 
+
+*** Distance
+If $x$ and $y$ are both of type $T$, and the [[Transformations][transformation]] $f$ can be applied finitely many times so that $y = f(f(....f(x)))$, 
+then the number of times you have to apply $f$ to $x$ to get $y$ is the *distance* from $x$ to $y$.
 
 
 * Chapter 3: Associative Operations
