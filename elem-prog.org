@@ -1,15 +1,29 @@
 #+AUTHOR: Tobi Lehman <tobi.lehman@gmail.com>
 #+TITLE: Notes on Elements of Programming by Alexander Stepanov & Paul McJones
-#+HTML_HEAD: <style type="text/css">.org-src-container { overflow-x: scroll; overflow-y: hidden; white-space: nowrap; }; pre .src { display: inline-block; } </style>
+#+HTML_HEAD: <style type="text/css">.org-src-container { overflow-x: scroll; overflow-y: hidden; white-space: nowrap; }; .org-src-container .src { display: inline-block; }; </style>
+#+HTML_HEAD_EXTRA: <style type="text/css">img {max-width: 100%}</style>
+
 * Preamble
-A good book starts by defining the terms it uses. This book begins with precise definitions of
-elementary notions in programming such as *value* and *equality*. By not relying on intuition,
-the book proceeds to rigorously define and explore the foundations of generic programming
-(one of the authors was a creator of the C++ Standard Template Library).
+A good technical book starts by defining the words it uses. This book begins with precise definitions 
+of elementary notions in programming such as *value* and *equality*. By not relying on intuition,
+the book proceeds to rigorously define and explore the foundations of [[https://en.wikipedia.org/wiki/Generic_programming][generic programming]].
+[[https://en.wikipedia.org/wiki/Alexander_Stepanov][One of the authors]] was a creator of the [[https://en.wikipedia.org/wiki/Standard_Template_Library][C++ Standard Template Library]].
 
 This book uses a small subset of C++, focusing on templates and generic programming. It is also
-more mathematical than most books about programming.
+more mathematical than most books about programming. 
 
+Since I majored in mathematics and do software development for a living, I've chosen this book as a focal 
+point for actively improving my skills and the quality of the work that I do. The best way for me to get 
+the most out the book is to read it carefully, memorize the definitions, prove the lemmas, do the exercises, 
+and publish all that work for others to see and criticize. If you have any comments, you can email me or 
+submit a pull request on this file: https://github.com/tlehman/elem-prog
+
+I wrote this in [[https://orgmode.org/][org-mode]] in the [[https://www.gnu.org/software/emacs/][Emacs]] text editor. The main benefit is being able to edit and eval code 
+directly in the same file as these notes. I export the org text to an html file that uses the [[https://www.mathjax.org/][MathJax]] 
+library to render math symbols using LaTeX, it's pretty awesome :)
+
+Success for this note-taking and reading will be if you can get as much out of the book from reading this 
+document as I did reading the book and writing this. My goal is distillation of the whole book.
 * Chapter 1: Foundations
 Programming is all about manipulating objects (e.g. 42), those objects have types (e.g. int),
 and those types cluster together into similar concepts (e.g. numbers).
@@ -117,7 +131,7 @@ a *transformation* is a [[Arity][unary]] operation
 For example, ~square~ is a transformation on ~int~
 
 #+name: square
-#+begin_src C++ :noweb yes :tangle yes :includes <iostream> :namespaces std :flags -std=c++14
+#+begin_src C++ :tangle square.h :includes <iostream> :namespaces std :flags -std=c++14
 template<typename Op>
     requires(BinaryOperation(Op))
 Domain(Op) square(const Domain(Op)& x, Op op)
@@ -130,8 +144,8 @@ Where we define ~Domain(.)~ using a macro. Observe that the ~requires(...)~ macr
 it is for documentation purposes only. /In the year 2020, the C++20 standard will provide language-level support 
 for ~concepts~ and ~requires~ constraints./
 
-#+name: headers
-#+begin_src C++ :noweb yes
+#+name: defs
+#+begin_src C++ 
 #define Domain(ftype) typename ftype::DomainType
 #define requires(...)
 #+end_src
@@ -140,8 +154,25 @@ An example of the ~ftype~ would be ~BinaryOperation~
 
 Testing out the ~square~ template function applied to ~Op~, and then applied to 2 and 3:
 
-#+name: ftypes
-#+begin_src C++ :noweb yes
+#+name: transformation
+#+begin_src C++ 
+template <typename T>
+struct Transformation {
+  typedef T DomainType;
+  typedef T ReturnType;
+  typedef std::function<T(T)> FuncType;
+  Transformation(FuncType fn) {
+    this->fn = fn;
+  }
+  FuncType fn;
+  ReturnType operator()(DomainType x) {
+    return fn(x);
+  };
+};
+#+end_src
+
+#+name: operations
+#+begin_src C++
 template <typename T>
 struct BinaryOperation {
   typedef T DomainType;
@@ -154,24 +185,27 @@ struct BinaryOperation {
 };
 #+end_src
 
-Now we tie it all together 
-#+begin_src C++ :noweb yes :tangle square.cpp :includes <iostream> :namespaces std :flags -std=c++14
-<<headers>>
-<<ftypes>>
-<<square>>
+Now we tie it all together and try it out:
 
-int main()
-{
-  BinaryOperation<int> mult;
+#+begin_src C++ :noweb yes :includes <iostream> :namespaces std :flags -std=c++14
+<<defs>>
+<<square>>
+<<operations>>
+
+int main() {
+  typedef BinaryOperation<int> Op;
+  Op mult;
   mult.fn = [](int a, int b) { return a * b; };
 
-  cout << square<BinaryOperation<int>>(2, mult) << endl
-       << square<BinaryOperation<int>>(3, mult) << endl
-       << square<BinaryOperation<int>>(4, mult) << endl;
-  return 0;
+  cout << square<Op>(2, mult) << endl
+      << square<Op>(3, mult) << endl
+      << square<Op>(4, mult) << endl;
 }
+
 #+end_src
-#+RESULTS:
+
+RESULTS:
+
 |  4 |
 |  9 |
 | 16 |
@@ -183,6 +217,199 @@ Given a transformation $f$ and a point $x$, we define the orbit as the set $O_{x
 If $x$ and $y$ are both of type $T$, and the [[Transformations][transformation]] $f$ can be applied finitely many times so that $y = f(f(....f(x)))$, 
 then the number of times you have to apply $f$ to $x$ to get $y$ is the *distance* from $x$ to $y$.
 
+We can define the ~distance~ function in C++ like so:
 
-* Chapter 3: Associative Operations
-* Chapter 4: Linear Orderings
+#+name: distance
+#+begin_src C++ :noweb yes :tangle yes
+template<typename F>
+    requires(Transformation(F))
+DistanceType(F) distance(Domain(F) x, Domain(F) y, F f)
+{
+  // Precondition: y is reachable from x under f
+  typedef DistanceType(F) N;
+  N n(0);
+  while(x != y) {
+    x = f(x);
+    n = n + N(1);
+  }
+  return n;
+}
+#+end_src
+
+The ~DistanceType(F)~ type is defined to be any integer type that is exactly large enough to hold the distance between any two points ~x~ and 
+~y~. Given a type $T$ with finitely many values of that type, the maximum distance with respect to a [[Transformations][transformation]] $f : T \to T$ would have 
+to be the number of values of type $T$.
+
+In C++, we can use [[https://en.cppreference.com/w/cpp/types/size_t][~std::size_t~]] to define our ~DistanceType~:
+   
+#+name: dtype
+#+begin_src C++ :noweb yes :tangle yes
+#define DistanceType(ftype) std::size_t
+#+end_src
+
+Now let's define a particular transformation and compute the distance between two points. Let the transformation be the increment function on 
+the integers: $\text{inc} : \mathbb{Z} \to \mathbb{Z}$, then the distance between 13 and 23 should be 10.
+
+#+begin_src C++ :noweb yes :includes <iostream> :namespaces std :flags -std=c++14
+<<dtype>>
+<<defs>>
+<<transformation>>
+<<distance>>
+
+int main() {
+  typedef Transformation<int> F;
+  F inc([](int a) { return a+1; });
+
+  cout << distance(13, 23, inc) << endl;
+  return 0;
+}
+#+end_src
+
+RESULTS:
+10
+
+As expected, we got 10. Next we move on to collision points.
+
+** Collision points
+If an orbit is finite, then we can find the point where a transformation $f$ loops back 
+on itself by running two sequences, one at 1x speed and one at 2x speed. We seek the 
+smallest $n$ such that $f^n(x) = f^{2n + 1}(x)$. A more detailed discussion of the algorithm 
+is in the book, for here I include the C++ code, and test it out on several transformations, 
+and do some of the exercises to modify and apply this code.
+
+#+name: collision_point
+#+begin_src C++ :noweb yes :includes <iostream> :namespaces std :flags -std=c++14
+template<typename F, typename P>
+  requires(Transformation(F) && UnaryPredicate(P))
+Domain(F) collision_point(const Domain(F)& x, F f, P p) {
+  // Precondition: p(x) and f(x) are defined
+  if(!p(x)) return x; 
+  Domain(F) slow = x;
+  Domain(F) fast = f(x);
+  while(fast != slow) {
+    slow = f(slow);
+    if(!p(fast)) return fast;
+    fast = f(fast);
+    if(!p(fast)) return fast;
+    fast = f(fast);
+  }
+  return fast;
+}
+#+end_src
+
+If the orbit is nonterminating for a particular element $x$, then we can specialize the ~collision_point~ algorithm:
+
+#+name: collision_point_nonterminating_orbit
+#+begin_src C++ :noweb yes :includes <iostream> :namespaces std :flags -std=c++14
+template<typename F>
+  requires(Transformation(F))
+Domain(F) collision_point_nonterminating_orbit(const Domain(F)& x, F f) {
+  Domain(F) slow = x;
+  Domain(F) fast = f(x);
+
+  while(fast != slow) {
+    slow = f(slow);
+    fast = f(fast);
+    fast = f(fast);
+  }
+  return fast;
+  // Postconditon: return value is a collision point
+}
+#+end_src
+
+To test this out, let's consider a simple transformation, that of incrementing an integer and taking the remainder modulo 13.
+
+#+name: inc
+#+begin_src C++ :noweb yes :includes <iostream> :namespaces std :flags -std=c++14
+typedef Transformation<int> F;
+F inc([](int a) { return (a+1) % 13; });
+#+end_src
+
+If we take the number 6, and then apply the transformation 6 times, we reach 12, applying it again we get 0, so the distance 
+between 6 and 0 should be (6 + 1) = 7
+
+*** testing ~distance~ with ~inc~ 
+
+#+begin_src C++ :noweb yes :includes <iostream> :namespaces std :flags -std=c++14
+<<dtype>>
+<<defs>>
+<<transformation>>
+<<distance>>
+
+int main() {
+  <<inc>>
+  cout << distance(6, 0, inc) << endl;
+  return 0;
+}
+#+end_src
+
+RESULTS:
+7
+
+Works correctly! Now let's move on to finding the collision point:
+
+*** testing ~collision_point~ using ~inc~ 
+
+If we take our ~inc~ operation and imagine playing out the collision finding algorithm starting at 0, fast takes 6 steps to get to 12, slow is at 5.
+After 7 more steps, slow is at 12, and fast has gone (1+6) to hit 12 again. The call will look like this:
+
+#+name: test_collision_inc
+#+begin_src: C++
+collision_point_nonterminating_orbit(0, inc);
+#+end_src
+
+And we expect the result to be 12. Weaving all the code together:
+
+#+begin_src C++ :noweb yes :includes <iostream> :namespaces std :flags -std=c++14
+<<defs>>
+<<transformation>>
+<<collision_point_nonterminating_orbit>>
+
+int main() {
+  <<inc>>
+  cout << collision_point_nonterminating_orbit(0, inc) << endl;
+  return 0;
+}
+#+end_src
+
+RESULTS:
+12
+
+Beautiful! Next we should take a detour and make some V I S U A L I Z A T I O N S. Since I'm a nerd I will of course do this with [[http://graphviz.org][GraphViz]].
+
+** Visualizing orbits!
+
+Our implementation of the [[Transformations][transformation]] type is flexible enough to allow for wrapping ~inc~ and producing some output along the way:
+
+#+name: inc_dot
+#+begin_src C++ :noweb yes :includes <iostream> :namespaces std :flags -std=c++14
+typedef Transformation<int> F;
+  
+F inc([](int a) {
+    int fa = (a+1) % 13; 
+    cout << a << "->" << fa << "; ";
+    return fa;
+});
+#+end_src
+
+Now we re-run the previous program with the new ~inc~
+
+#+begin_src C++ :noweb yes :tangle collision_point.cpp :includes <iostream> :namespaces std :flags -std=c++14 
+<<defs>>
+<<transformation>>
+<<collision_point_nonterminating_orbit>>
+
+int main() {
+  <<inc_dot>>
+  cout << collision_point_nonterminating_orbit(0, inc) << endl;
+  return 0;
+}
+#+end_src
+
+In emacs, run ~org-bable-tangle~ Then eval this next src block:
+
+#+begin_src sh
+g++ collision_point.cpp -std=c++14; echo "strict digraph { $(./a.out) }" | circo -Tpng > inc_13.png
+#+end_src
+
+file:inc_13.png
