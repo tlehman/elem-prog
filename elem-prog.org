@@ -539,3 +539,77 @@ RESULTS:
 4
 
 As expected!
+
+*** Measuring orbit sizes
+
+Of the three finite types of orbits (circular, \rho-shaped and terminating), we can summarize the 
+structure of each type of orbit using this table:
+
+| Case        |       |       |                  |
+| Terminating | $h-1$ | 0     | terminal element |
+| Circular    | 0     | $c-1$ | $x$              |
+| \rho-shaped | $h$   | $c-1$ | connection point |
+
+Aside, to return a triple of numbers in C++, we could use a ~struct~, a ~class~, or a ~std::tuple<>~ the 
+book uses ~triple<DistanceType(F), DistanceType(F), Domain(F)>~, so I will find a way to use templates or 
+macros to make the book's syntax compile. Future me: please wish me luck.
+
+#+name: triple
+#+begin_src C++ <tuple> :flags -std=c++14
+template<typename A, typename B, typename C>
+using triple = std::tuple<A,B,C>;
+#+end_src
+
+#+RESULTS: triple
+
+Awesome, that compiled! I wrote that on the bus.
+
+#+name: connection_point_nonterminating_orbit
+#+begin_src C++ :noweb yes
+template <typename F>
+  requires(Transformation(F))
+triple<DistanceType(F), DistanceType(F), Domain(F)>
+orbit_structure_nonterminating_orbit(const Domain(F)& x, F f) {
+  typedef DistanceType(F) N;
+  Domain(F) y = connection_point_nonterminating_orbit(x, f);
+  return triple<N, N, Domain(F)>(distance(x,y,f),
+                                 distance(f(y), y, f),
+                                 y);
+
+} 
+#+end_src
+
+** Exercise 2.5
+Use ~orbit_structure_nonterminating_orbit~ to determine the average handle size and cycle size of 
+the pseudorandom number generators on your platform for various seeds. The C standard library ~<stdlib.h>~
+has a pseudorandom number generator, you use it by setting a seed with ~srand(seed)~ and then get the 
+next element of the sequence using ~rand()~
+
+#+name: rand
+#+begin_src C++ :noweb yes :includes <stdlib.h> <tuple> <iostream> <functional> :namespaces std :flags -std=c++14
+<<defs>>
+<<triple>>
+<<transformation>>
+<<collision_point_nonterminating_orbit>>
+<<convergent_point>>
+<<connection_point_nonterminating_orbit>>
+
+int main() {
+  typedef Transformation<int> F;
+
+  F f([](int seed) {
+    srand(seed);
+    return rand();
+  });
+  
+  int x = 1;
+  orbit_structure_nonterminating_orbit(x, f);
+
+  return 0;
+}
+
+#+end_src
+
+#+RESULTS: rand
+
+
